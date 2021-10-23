@@ -1,6 +1,6 @@
 package com.alert.app.frontend.dto;
 
-import com.alert.app.frontend.status.SubscribeStatus;
+import com.alert.app.frontend.status.UserStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,6 +18,7 @@ public class UserDto {
     private String username;
     private String email;
     private String password;
-    private SubscribeStatus subscribeStatus;
+    private UserStatus logStatus;
+    private UserStatus subStatus;
     private LocalDateTime created;
 }

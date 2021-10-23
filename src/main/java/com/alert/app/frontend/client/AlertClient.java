@@ -1,12 +1,9 @@
 package com.alert.app.frontend.client;
 
-import com.alert.app.frontend.AlertFrontApplication;
 import com.alert.app.frontend.config.AlertConfig;
 import com.alert.app.frontend.dto.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -25,11 +22,19 @@ public class AlertClient {
 
 
     public void setAllWeatherStations() {
-        restTemplate.getForObject(createUriForSetAllWeatherStations(), Void.class);
+        try {
+            restTemplate.getForObject(createUriForSetAllWeatherStations(), Void.class);
+        } catch (RestClientException e) {
+            log.error(e.getMessage(), e);
+        }
     }
 
     public void setAllAirQualityStations() {
-        restTemplate.getForObject(createUriForSetAllAirQualityStations(), Void.class);
+        try {
+            restTemplate.getForObject(createUriForSetAllAirQualityStations(), Void.class);
+        } catch (RestClientException e) {
+            log.error(e.getMessage(), e);
+        }
     }
 
     public List<AirQualityStationDto> getAllAirQualityStations() {
@@ -61,12 +66,22 @@ public class AlertClient {
         }
     }
 
-    public UserDto createUser(UserDto userDto) {
+    public void createUser(UserDto userDto) {
         try {
-            return restTemplate.postForObject(createUriForCreateUser(), userDto, UserDto.class);
+            restTemplate.postForObject(createUriForCreateUser(), userDto, UserDto.class);
         } catch (RestClientException e) {
             log.error(e.getMessage(), e);
-            return new UserDto();
+            new UserDto();
+        }
+    }
+
+    public List<UserDto> getAllUsers() {
+        try {
+            return Arrays.asList(Optional.ofNullable(restTemplate.getForObject(createUriForGetAllUsers(), UserDto[].class))
+                    .orElse(new UserDto[0]));
+        } catch (RestClientException e) {
+            log.error(e.getMessage(), e);
+            return new ArrayList<>();
         }
     }
 
@@ -79,12 +94,71 @@ public class AlertClient {
         }
     }
 
-    public SubscribeDto createSubscribe(long userId, String city) {
+    public UserDto getUserByUsername(String username) {
         try {
-            return restTemplate.postForObject(createUriForCreateSubscribe(userId, city), null, SubscribeDto.class);
+            return restTemplate.getForObject(createUriForGetUserByUsername(username), UserDto.class);
+        } catch (RestClientException e) {
+            log.error(e.getMessage(), e);
+            return new UserDto();
+        }
+    }
+
+    public void updateUser(UserDto userDto) {
+        try {
+            restTemplate.put(createUriForUpdateUser(), userDto);
+        } catch (RestClientException e) {
+            log.error(e.getMessage(), e);
+        }
+    }
+
+    public void logInUser(String email, String password) {
+        try {
+            restTemplate.put(createUriForLogInUser(email, password), null);
+        } catch (RestClientException e) {
+            log.error(e.getMessage(), e);
+        }
+    }
+
+    public void deleteUser(long userId) {
+        try {
+            restTemplate.delete(createUriForDeleteUser(userId));
+        } catch (RestClientException e) {
+            log.error(e.getMessage(), e);
+        }
+    }
+
+    public List<SubscribeDto> getAllSubscribes() {
+        try {
+            return Arrays.asList(Optional.ofNullable(restTemplate.getForObject(createUriForGetAllSubscribes(), SubscribeDto[].class))
+                    .orElse(new SubscribeDto[0]));
+        } catch (RestClientException e) {
+            log.error(e.getMessage(), e);
+            return new ArrayList<>();
+        }
+    }
+
+    public SubscribeDto getSubscribeByUserIdAndCity(long userId, String city) {
+        try {
+            return restTemplate.getForObject(createUriForGetSubscribeByUserIdAndCity(userId, city), SubscribeDto.class);
         } catch (RestClientException e) {
             log.error(e.getMessage(), e);
             return new SubscribeDto();
+        }
+    }
+
+    public void createSubscribe(long userId, String city) {
+        try {
+            restTemplate.postForObject(createUriForCreateSubscribe(userId, city), null, SubscribeDto.class);
+        } catch (RestClientException e) {
+            log.error(e.getMessage(), e);
+        }
+    }
+
+    public void deleteSubscribe(long subscribeId) {
+        try {
+            restTemplate.delete(createUriForDeleteSubscribe(subscribeId));
+        } catch (RestClientException e) {
+            log.error(e.getMessage(), e);
         }
     }
 
@@ -125,8 +199,8 @@ public class AlertClient {
                 .toUri();
     }
 
-    private URI createUriForCreateUser() {
-        return UriComponentsBuilder.fromHttpUrl(alertConfig.getAlertBackendApiEndpoint() + "/user")
+    private URI createUriForGetAllUsers() {
+        return UriComponentsBuilder.fromHttpUrl(alertConfig.getAlertBackendApiEndpoint() + "/user/all")
                 .build()
                 .encode()
                 .toUri();
@@ -140,10 +214,71 @@ public class AlertClient {
                 .toUri();
     }
 
+    private URI createUriForGetUserByUsername(String username) {
+        return UriComponentsBuilder.fromHttpUrl(alertConfig.getAlertBackendApiEndpoint() + "/user/name")
+                .queryParam("username", username)
+                .build()
+                .encode()
+                .toUri();
+    }
+
+    private URI createUriForCreateUser() {
+        return UriComponentsBuilder.fromHttpUrl(alertConfig.getAlertBackendApiEndpoint() + "/user")
+                .build()
+                .encode()
+                .toUri();
+    }
+
+    private URI createUriForUpdateUser() {
+        return UriComponentsBuilder.fromHttpUrl(alertConfig.getAlertBackendApiEndpoint() + "/user")
+                .build()
+                .encode()
+                .toUri();
+    }
+
+    private URI createUriForLogInUser(String email, String password) {
+        return UriComponentsBuilder.fromHttpUrl(alertConfig.getAlertBackendApiEndpoint() + "/user/logIn")
+                .queryParam("email", email)
+                .queryParam("password", password)
+                .build()
+                .encode()
+                .toUri();
+    }
+
+    private URI createUriForDeleteUser(long userId) {
+        return UriComponentsBuilder.fromHttpUrl(alertConfig.getAlertBackendApiEndpoint() + "/user/" + userId)
+                .build()
+                .encode()
+                .toUri();
+    }
+
+    private URI createUriForGetAllSubscribes() {
+        return UriComponentsBuilder.fromHttpUrl(alertConfig.getAlertBackendApiEndpoint() + "/subscribe/all")
+                .build()
+                .encode()
+                .toUri();
+    }
+
+    private URI createUriForGetSubscribeByUserIdAndCity(long userId, String city) {
+        return UriComponentsBuilder.fromHttpUrl(alertConfig.getAlertBackendApiEndpoint() + "/subscribe")
+                .queryParam("userId", userId)
+                .queryParam("city", city)
+                .build()
+                .encode()
+                .toUri();
+    }
+
     private URI createUriForCreateSubscribe(long userId, String city) {
         return UriComponentsBuilder.fromHttpUrl(alertConfig.getAlertBackendApiEndpoint() + "/subscribe")
                 .queryParam("userId", userId)
                 .queryParam("city", city)
+                .build()
+                .encode()
+                .toUri();
+    }
+
+    private URI createUriForDeleteSubscribe(long subscribeId) {
+        return UriComponentsBuilder.fromHttpUrl(alertConfig.getAlertBackendApiEndpoint() + "/subscribe/" + subscribeId)
                 .build()
                 .encode()
                 .toUri();

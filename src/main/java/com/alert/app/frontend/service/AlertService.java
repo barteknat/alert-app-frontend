@@ -38,15 +38,47 @@ public class AlertService {
         return getAllAirQualityStations().stream().filter(station -> station.getCity().contains(city)).collect(Collectors.toList()).get(0);
     }
 
-    public UserDto createUser(UserDto userDto) {
-        return alertClient.createUser(userDto);
+    public void createUser(UserDto userDto) {
+        alertClient.createUser(userDto);
+    }
+
+    public List<UserDto> getAllUsers() {
+        return alertClient.getAllUsers();
     }
 
     public UserDto getUserByEmail(String email) {
         return alertClient.getUserByEmail(email);
     }
 
-    public SubscribeDto createSubscribe(long userId, String city) {
-        return alertClient.createSubscribe(userId, city);
+    public UserDto getUserByUsername(String username) {
+        return alertClient.getUserByUsername(username);
+    }
+
+    public void updateUser(UserDto userDto) {
+        alertClient.updateUser(userDto);
+    }
+
+    public void logInUser(String email, String password) {
+        alertClient.logInUser(email, password);
+    }
+
+    public void deleteUser(long userId) {
+        alertClient.deleteUser(userId);
+    }
+
+    public List<SubscribeDto> getAllSubscribes() {
+        return alertClient.getAllSubscribes();
+    }
+
+    public SubscribeDto getSubscribeByUserIdAndCity(long userId, String city) {
+        return alertClient.getSubscribeByUserIdAndCity(userId, city);
+    }
+
+    public void createSubscribe(long userId, String city) {
+        alertClient.createSubscribe(userId, city);
+    }
+
+    public void deleteSubscribe(long subscribeId) {
+        alertClient.deleteSubscribe(subscribeId);
     }
 }
