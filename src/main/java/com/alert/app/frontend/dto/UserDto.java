@@ -1,6 +1,7 @@
 package com.alert.app.frontend.dto;
 
 import com.alert.app.frontend.status.UserStatus;
+import com.vaadin.flow.spring.annotation.SpringComponent;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,6 +13,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@SpringComponent
 public class UserDto {
 
     private long id;

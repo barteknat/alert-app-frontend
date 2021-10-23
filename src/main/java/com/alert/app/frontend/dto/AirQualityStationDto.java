@@ -11,7 +11,5 @@ public class AirQualityStationDto {
 
     private long id;
     private long stationApiId;
-//    private String name;
-//    private String street;
     private String city;
 }

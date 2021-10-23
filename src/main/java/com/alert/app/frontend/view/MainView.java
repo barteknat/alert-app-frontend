@@ -2,7 +2,6 @@ package com.alert.app.frontend.view;
 
 import com.alert.app.frontend.dto.*;
 import com.alert.app.frontend.service.AlertService;
-import com.alert.app.frontend.status.UserStatus;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.StyleSheet;
@@ -15,497 +14,238 @@ import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
-import com.vaadin.flow.component.textfield.PasswordField;
-import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.spring.annotation.SpringComponent;
+import com.vaadin.flow.spring.annotation.UIScope;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.lumo.Lumo;
+import lombok.Setter;
 
 import java.util.List;
 
+@Setter
+@SpringComponent
+@PreserveOnRefresh
+@UIScope
 @Route
 @Theme(value = Lumo.class)
 @StyleSheet("../frontend/styles/style.css")
-public class MainView extends Div {
+public class MainView extends VerticalLayout {
 
     private final AlertService alertService;
-
-    private final H1 header1 = new H1("AIR QUALITY ALERT APP");
-    private final H4 header2 = new H4("CHECK ACTUAL AIR POLLUTION AND WEATHER DETAILS >>>>");
-    private final H4 header3 = new H4("SUBSCRIBE TO BE ALERTED ON AIR CONDITION BY MAIL >>>>");
-    private final Select<AirQualityStationDto> selectCity = new Select<>();
-    private final Label labelGridTitle = new Label();
-    private final Grid<AirQualitySensorDto> gridAirQualitySensor = new Grid<>(AirQualitySensorDto.class);
-    private final Label labelWeatherTitle = new Label();
-    private final Label labelTemperature = new Label();
-    private final Label labelWindSpeed = new Label();
-    private final Label labelHumidity = new Label();
-    private final Label labelPressure = new Label();
-    private final Button buttonDetails = new Button("DETAILS");
-    private final Button buttonSubscribe = new Button("SUBSCRIBE");
-    private final Button buttonSignUp = new Button("SIGN UP");
-    private final Button buttonLogIn = new Button("LOG IN");
-    private final Button buttonLogOut = new Button("LOG OUT");
-    private final Button buttonInfo = new Button("INFO");
-    private final Button buttonUpdateAccount = new Button("UPDATE ACCOUNT");
-
-    private final MenuBar menuBar1 = new MenuBar();
-    private final MenuBar menuBar2 = new MenuBar();
-    private final TextField textFieldUsernameSignUp = new TextField();
-    private final TextField textFieldEmailSignUp = new TextField();
-    private final PasswordField passwordFieldSignUp = new PasswordField();
-    private final Button buttonCommitSignUp = new Button("SIGN UP");
-    private final TextField textFieldEmailLogIn = new TextField();
-    private final PasswordField passwordFieldLogIn = new PasswordField();
-    private final Button buttonCommitLogIn = new Button("LOG IN");
-    private final TextField textFieldGiveEmailForSubscribe = new TextField();
-    private final Button buttonSubscribeCommit = new Button("COMMIT SUBSCRIPTION");
-    private final Button buttonDeleteSubscribe = new Button("DELETE SUBSCRIPTION");
+    private UserDto userDto = null;
+    private final MenuBar menu = new MenuBar();
+    private final MenuBar menuLoggedIn = new MenuBar();
+    private final H1 header = new H1("AIR QUALITY ALERT APP");
+    private final Select<AirQualityStationDto> citySelect = new Select<>();
+    private final Grid<AirQualitySensorDto> pollutionGrid = new Grid<>(AirQualitySensorDto.class);
+    private final Label pollutionTitle = new Label();
+    private final Label weatherTitle = new Label();
+    private final Label temperature = new Label();
+    private final Label windSpeed = new Label();
+    private final Label humidity = new Label();
+    private final Label pressure = new Label();
+    private final Button details = new Button("DETAILS");
+    private final Button subscribe = new Button("SUBSCRIBE");
+    private final Button signUp = new Button("SIGN UP");
+    private final Button logIn = new Button("LOG IN");
+    private final Button logOut = new Button("LOG OUT");
+    private final Button info = new Button("INFO");
+    private final Button account = new Button("ACCOUNT");
     private final Dialog dialog = new Dialog();
-    private final Dialog dialogInfo = new Dialog();
+    private final Dialog infoDialog = new Dialog();
+    private final HorizontalLayout selectHorizontalLayout = new HorizontalLayout(citySelect, details, subscribe);
+    private final VerticalLayout detailsVerticalLayout = new VerticalLayout(pollutionTitle, pollutionGrid, weatherTitle, temperature, windSpeed, humidity, pressure);
+    private final VerticalLayout mainLayout = new VerticalLayout(menu, header, selectHorizontalLayout, detailsVerticalLayout);
 
     public MainView(AlertService alertService) {
         this.alertService = alertService;
         this.addClassNames("body");
         styleComponents();
-        loadSelectData();
-        setGridColumns();
-
-        menuBar1.addItem(buttonSignUp);
-        menuBar1.addItem(buttonLogIn);
-        menuBar1.addItem(buttonInfo);
-        menuBar2.addItem(buttonLogOut);
-        menuBar2.addItem(buttonUpdateAccount);
-
-
-        VerticalLayout verticalLayoutSignUp = new VerticalLayout(textFieldUsernameSignUp, textFieldEmailSignUp, passwordFieldSignUp, buttonCommitSignUp);
-        verticalLayoutSignUp.getStyle()
-                .set("color", "black")
-                .set("margin", "100px 0px 0px 530px");
-
-        VerticalLayout verticalLayoutLogIn = new VerticalLayout(textFieldEmailLogIn, passwordFieldLogIn, buttonCommitLogIn);
-        verticalLayoutLogIn.getStyle()
-                .set("color", "black")
-                .set("margin", "100px 0px 0px 530px");
-
-        HorizontalLayout horizontalLayoutSubscribeCommit = new HorizontalLayout(textFieldGiveEmailForSubscribe, buttonSubscribeCommit, buttonDeleteSubscribe);
-        horizontalLayoutSubscribeCommit.setVisible(false);
-
-        HorizontalLayout horizontalLayoutSubscribeButtons = new HorizontalLayout(selectCity, buttonDetails, buttonSubscribe, horizontalLayoutSubscribeCommit);
-        horizontalLayoutSubscribeButtons.getStyle()
-                .set("margin", "30px 0px 0px 0px");
-
-        VerticalLayout verticalLayoutAirQualityAndTemperatureDetails = new VerticalLayout(labelGridTitle, gridAirQualitySensor, labelWeatherTitle, labelTemperature, labelWindSpeed, labelHumidity, labelPressure);
-        verticalLayoutAirQualityAndTemperatureDetails.setVisible(false);
-
-        VerticalLayout mainLayoutBasic = new VerticalLayout(menuBar1, header1, horizontalLayoutSubscribeButtons, verticalLayoutAirQualityAndTemperatureDetails);
-
-        add(mainLayoutBasic);
-
-//
-//        VerticalLayout layoutLogIn = new VerticalLayout(menuBar1, header1, horizontalLayoutSubscribeButtons, verticalLayoutSignUp);
-//
-//        VerticalLayout layoutLoggedIn = new VerticalLayout(menuBar2, header1, header2, header3, horizontalLayoutSubscribeButtons, verticalLayoutSignUp);
-
-        buttonInfo.addClickListener(event -> {
+        loadCities();
+        setPollutionGrid();
+        menu.addItem(signUp);
+        menu.addItem(logIn);
+        menu.addItem(info);
+        menuLoggedIn.addItem(logOut);
+        menuLoggedIn.addItem(account);
+        info.addClickListener(event -> {
             showInfo();
         });
-
-        buttonSignUp.addClickListener(event -> {
-            removeAll();
-            VerticalLayout layoutSignUp = new VerticalLayout(menuBar1, header1, verticalLayoutSignUp);
-            add(layoutSignUp);
+        signUp.addClickListener(event -> {
+            signUp.getUI().ifPresent(ui -> ui.navigate("signup"));
         });
-
-        buttonCommitSignUp.addClickListener(event -> {
-            if (signUp()) {
+        logIn.addClickListener(event -> {
+            logIn.getUI().ifPresent(ui -> ui.navigate("login"));
+        });
+        logOut.addClickListener(event -> {
+            if (logOut()) {
                 removeAll();
-                add(new VerticalLayout(menuBar1, header1, horizontalLayoutSubscribeButtons, verticalLayoutAirQualityAndTemperatureDetails));
+                add(new VerticalLayout(menu, header, selectHorizontalLayout, detailsVerticalLayout));
+                subscribe.setVisible(false);
             }
         });
-
-        buttonLogIn.addClickListener(event -> {
-            removeAll();
-            VerticalLayout layoutLogIn = new VerticalLayout(menuBar1, header1, horizontalLayoutSubscribeButtons, verticalLayoutLogIn);
-            add(layoutLogIn);
-        });
-
-        buttonCommitLogIn.addClickListener(event -> {
-            if (logIn()) {
-                removeAll();
-                add(new VerticalLayout(menuBar2, header1, horizontalLayoutSubscribeButtons, verticalLayoutAirQualityAndTemperatureDetails));
-            }
-        });
-
-        buttonDetails.addClickListener(event -> {
-            if (selectCity.getValue() == null) {
+        details.addClickListener(event -> {
+            if (citySelect.getValue() == null) {
                 showDialog("YOU HAVE TO CHOOSE CITY FIRST");
                 return;
             }
             setAirPollutionAndWeatherDetails();
-            verticalLayoutAirQualityAndTemperatureDetails.setVisible(true);
+            detailsVerticalLayout.setVisible(true);
         });
-
-        buttonSubscribe.addClickListener(event -> {
-            if (selectCity.getValue() == null) {
+        subscribe.addClickListener(event -> {
+            if (citySelect.getValue() == null) {
                 showDialog("YOU HAVE TO CHOOSE CITY FIRST");
                 return;
             }
-            horizontalLayoutSubscribeCommit.setVisible(true);
+            subscribe();
         });
-
-        buttonSubscribeCommit.addClickListener(event -> {
-            if (selectCity.getValue() == null) {
-                showDialog("YOU HAVE TO CHOOSE CITY FIRST");
-                return;
-            }
-            if (commitSubscribe()) {
-                horizontalLayoutSubscribeCommit.setVisible(false);
-            }
-        });
-
-        buttonDeleteSubscribe.addClickListener(event -> {
-            if (selectCity.getValue() == null) {
-                showDialog("YOU HAVE TO CHOOSE CITY FIRST");
-                return;
-            }
-            deleteSubscribe();
-            showDialog("SUBSCRIPTION OF " + selectCity.getValue().getCity() + " HAS BEEN DELETED");
-        });
-
-
-//        buttonLogIn.addClickListener(event -> {
-//            VerticalLayout mainLayoutLogIn = new VerticalLayout(header1, horizontalLayoutSubscribeButtons, verticalLayoutLogIn);
-//            removeAll();
-//            add(mainLayoutLogIn);
-//            commitLogInButton.addClickListener(event1 -> {
-//                if (logIn()) {
-//                    removeAll();
-//                    add(menuBar2, mainLayout);
-//                } else {
-////                removeAll();
-////                add(menuBar1, mainLayout);
-//                }
-//            });
-//        });
-//        refresh();
+        add(mainLayout);
     }
 
-    private boolean logIn() {
-        if (textFieldEmailLogIn.getValue().isEmpty() ||
-                passwordFieldLogIn.getValue().isEmpty()) {
-            showDialog("FIELD CANNOT BE EMPTY");
-            return false;
-        }
-        UserDto userDto = alertService.getUserByEmail(textFieldEmailLogIn.getValue());
-        if (userDto == null) {
-            showDialog("INCORRECT USER");
-            return false;
-        }
-        if (userDto.getLogStatus().equals(UserStatus.LOGGED_IN)) {
-            showDialog("USER IS ALREADY LOGGED IN");
-            return false;
-        }
-        if (userDto.getPassword().equals(passwordFieldLogIn.getValue())) {
-            alertService.logInUser(textFieldEmailLogIn.getValue(), passwordFieldLogIn.getValue());
-            showDialog("YOU ARE LOGGED IN");
-            return true;
-        }
-        showDialog("INCORRECT PASSWORD");
-        return false;
-    }
-
-    private boolean signUp() {
-        if (textFieldUsernameSignUp.getValue().isEmpty() ||
-                textFieldEmailSignUp.getValue().isEmpty() ||
-                passwordFieldSignUp.getValue().isEmpty()) {
-            showDialog("FIELD CANNOT BE EMPTY");
-            return false;
-        }
-        if (passwordFieldSignUp.getValue().length() < 3 || passwordFieldSignUp.getValue().length() > 15) {
-            showDialog("PASSWORD IS MIN 3 AND MAX 15 CHARACTERS");
-            return false;
-        }
-        UserDto userDto = alertService.getUserByEmail(textFieldEmailSignUp.getValue());
-        if (userDto != null) {
-            showDialog("USER WITH THIS E-MAIL ALREADY EXISTS IN DATABASE");
-            return false;
-        }
-        alertService.createUser(UserDto.builder()
-                .username(textFieldUsernameSignUp.getValue())
-                .email(textFieldEmailSignUp.getValue())
-                .password(passwordFieldSignUp.getValue())
-                .build());
-        showDialog("ACCOUNT HAS BEEN CREATED");
-        return true;
+    public void setLoggedInLayer() {
+        removeAll();
+        add(new VerticalLayout(menuLoggedIn, header, selectHorizontalLayout, detailsVerticalLayout));
+        subscribe.setVisible(true);
     }
 
     private void showInfo() {
-        dialogInfo.add(new Text("ALERT APP ALLOWS YOU TO CHECKING ACTUAL AIR " +
-                "POLLUTION AND WEATHER DETAILS IN CHOSEN CITY AND SUBSCRIBE TO " +
-                "BE ALERTED BY E-MAIL ON AIR CONDITION IN CHOSEN CITY"
+        infoDialog.removeAll();
+        infoDialog.add(new Text("ALERT APP ALLOWS YOU TO CHECKING ACTUAL AIR " +
+                "POLLUTION AND WEATHER DETAILS IN CHOSEN CITY. YOU CAN ALSO " +
+                "SUBSCRIBE TO BE ALERTED BY E-MAIL ABOUT BAD AIR CONDITION IN " +
+                "THE CITY, BUT TO DO THAT, YOU HAVE TO SIGN UP AND LOG IN FIRST."
         ));
-        dialogInfo.open();
+        infoDialog.open();
     }
 
-    private boolean commitSubscribe() {
-        UserDto userDto = alertService.getUserByEmail(textFieldGiveEmailForSubscribe.getValue());
-        if (userDto == null) return false;
-        SubscribeDto subscribeDto = alertService.getSubscribeByUserIdAndCity(userDto.getId(), selectCity.getValue().getCity());
+    private void subscribe() {
+        if (userDto == null) return;
+        SubscribeDto subscribeDto = alertService.getSubscribeByUserIdAndCity(userDto.getId(), citySelect.getValue().getCity());
         if (subscribeDto != null) {
-            showDialog("SUBSCRIBE ALREADY EXISTS");
-            return false;
+            showDialog("YOU ARE ALREADY SUBSCRIBING THIS CITY");
+            return;
         }
-        alertService.createSubscribe(userDto.getId(), selectCity.getValue().getCity());
-        showDialog("YOU ARE SUBSCRIBING >>" + selectCity.getValue().getCity() + "<< YOU WILL RECEIVE ALERT WHEN AIR CONDITION WILL BE BAD");
+        alertService.createSubscribe(userDto.getId(), citySelect.getValue().getCity());
+        showDialog("YOU ARE SUBSCRIBING >>" + citySelect.getValue().getCity() + "<< YOU WILL RECEIVE ALERT WHEN AIR CONDITION WILL BE BAD");
+    }
+
+    private boolean logOut() {
+        if (userDto == null) return false;
+        alertService.logOutUser(userDto.getEmail());
+        userDto = null;
+        showDialog("YOU ARE LOGGED OUT");
         return true;
     }
 
-    private void deleteSubscribe() {
-
+    private void loadCities() {
+        alertService.setAllWeatherStations();
+        alertService.setAllAirQualityStations();
+        List<AirQualityStationDto> stationDtoList = alertService.getAllAirQualityStations();
+        citySelect.setItemLabelGenerator(AirQualityStationDto::getCity);
+        citySelect.setItems(stationDtoList);
     }
 
+    private void setPollutionGrid() {
+        pollutionGrid.setColumns("name", "code", "value");
+        pollutionGrid.getColumnByKey("name").setHeader("POLLUTION NAME");
+        pollutionGrid.getColumnByKey("code").setHeader("PATTERN");
+        pollutionGrid.getColumnByKey("value").setHeader("VALUE [µg/m³]");
+    }
 
     private void setAirPollutionAndWeatherDetails() {
-//        alertService.setAllWeatherStations();
-        WeatherStationDto weatherStationDto = alertService.getWeatherStationByCity(selectCity.getValue().getCity());
-        List<AirQualitySensorDto> airQualitySensorDtos = alertService.getAllAirQualitySensorsByStationId(alertService.findByCity(selectCity.getValue().getCity()).getStationApiId());
-        labelWeatherTitle.setText("WEATHER IN " + weatherStationDto.getCity() + " ON " + weatherStationDto.getDate() + "T" + weatherStationDto.getTime() + ":00");
-        labelTemperature.setText("TEMPERATURE: " + weatherStationDto.getTemperature() + " °C");
-        labelWindSpeed.setText("WIND SPEED: " + weatherStationDto.getWindSpeed() + " km/h");
-        labelHumidity.setText("HUMIDITY: " + weatherStationDto.getHumidity() + " %");
-        labelPressure.setText("PRESSURE: " + weatherStationDto.getPressure() + " hPa");
+        WeatherStationDto weatherStationDto = alertService.getWeatherStationByCity(citySelect.getValue().getCity());
+        List<AirQualitySensorDto> airQualitySensorDtos = alertService.getAllAirQualitySensorsByStationId(alertService.findByCity(citySelect.getValue().getCity()).getStationApiId());
+        weatherTitle.setText("WEATHER IN " + weatherStationDto.getCity() + " ON " + weatherStationDto.getDate() + "T" + weatherStationDto.getTime() + ":00");
+        temperature.setText("TEMPERATURE: " + weatherStationDto.getTemperature() + " °C");
+        windSpeed.setText("WIND SPEED: " + weatherStationDto.getWindSpeed() + " km/h");
+        humidity.setText("HUMIDITY: " + weatherStationDto.getHumidity() + " %");
+        pressure.setText("PRESSURE: " + weatherStationDto.getPressure() + " hPa");
         System.out.println(weatherStationDto.toString());
-        labelGridTitle.setText("AIR POLLUTION IN " + weatherStationDto.getCity() + " ON " + airQualitySensorDtos.get(0).getDate());
-        gridAirQualitySensor.setItems(airQualitySensorDtos);
+        pollutionTitle.setText("AIR POLLUTION IN " + weatherStationDto.getCity() + " ON " + airQualitySensorDtos.get(0).getDate());
+        pollutionGrid.setItems(airQualitySensorDtos);
     }
-
-    private void createUser(String email) {
-        alertService.createUser(UserDto.builder().email(email).build());
-    }
-
-    private long getUserId(String email) {
-        return alertService.getUserByEmail(email).getId();
-    }
-
-    private void createSubscribe(long userId, String city) {
-        alertService.createSubscribe(userId, city);
-    }
-
-//    private void upadte() {
-//        gridStation.setItems(alertService.findByCity(textField.getValue()));
-//    }
 
     private void styleComponents() {
-        header1.getStyle()
+        header.getStyle()
                 .set("border", "3px solid black")
                 .set("color", "black")
-                .set("margin", "-35px 0px 0px 480px");
-
-        header2.getStyle()
-                .set("border", "1px solid black")
-                .set("background", "grey")
-                .set("color", "black")
-                .set("margin", "20px 0px 0px 0px");
-        header2.setWidth("543px");
-
-        header3.getStyle()
-                .set("border", "1px solid black")
-                .set("background", "grey")
-                .set("color", "black")
-                .set("margin", "5px 0px 0px 0px");
-        header3.setWidth("543px");
-
-        buttonSignUp.getStyle()
+                .set("margin", "-22px 0px 0px 0px");
+        signUp.getStyle()
                 .set("color", "black");
-
-        buttonLogIn.getStyle()
+        logIn.getStyle()
                 .set("color", "black");
-
-        buttonLogOut.getStyle()
+        logOut.getStyle()
                 .set("color", "black");
-
-        buttonUpdateAccount.getStyle()
+        info.getStyle()
                 .set("color", "black");
-
-        buttonInfo.getStyle()
+        account.getStyle()
                 .set("color", "black");
-
-        selectCity.getStyle()
+        citySelect.getStyle()
                 .set("border", "1px solid black");
-        selectCity.setHelperText("SELECT CITY");
-
-        buttonSubscribe.getStyle()
+        citySelect.setHelperText("SELECT CITY");
+        subscribe.getStyle()
                 .set("border", "1px solid black")
                 .set("color", "black")
                 .set("background", "darkgrey");
-        buttonSubscribe.setWidth("160px");
-        buttonSubscribe.setHeight("45px");
-        buttonSubscribe.setIcon(new Icon(VaadinIcon.ALARM));
-
-        buttonDetails.getStyle()
+        subscribe.setWidth("150x");
+        subscribe.setHeight("45px");
+        subscribe.setIcon(new Icon(VaadinIcon.ALARM));
+        subscribe.setVisible(false);
+        details.getStyle()
                 .set("border", "1px solid black")
                 .set("color", "black")
                 .set("background", "darkgrey");
-        buttonDetails.setWidth("160px");
-        buttonDetails.setHeight("45px");
-        buttonDetails.setIcon(new Icon(VaadinIcon.ARROW_CIRCLE_RIGHT_O));
-
-        labelGridTitle.getStyle()
+        details.setWidth("128px");
+        details.setHeight("45px");
+        details.setIcon(new Icon(VaadinIcon.ARROW_CIRCLE_RIGHT_O));
+        pollutionTitle.getStyle()
                 .set("border", "3px solid black")
                 .set("background", "white")
                 .set("color", "black");
-
-        gridAirQualitySensor.getStyle()
+        pollutionGrid.getStyle()
                 .set("border", "1px solid black")
                 .set("color", "black");
-        gridAirQualitySensor.setWidth("450px");
-        gridAirQualitySensor.setHeight("200px");
-
-        labelWeatherTitle.getStyle()
+        pollutionGrid.setWidth("450px");
+        pollutionGrid.setHeight("180px");
+        weatherTitle.getStyle()
                 .set("border", "3px solid black")
                 .set("background", "white")
                 .set("color", "black");
-
-        labelTemperature.getStyle()
+        temperature.getStyle()
                 .set("border", "1px solid black")
                 .set("background", "white")
-                .set("margin", "5px 0px 0px 0px")
                 .set("color", "black");
-
-        labelWindSpeed.getStyle()
+        windSpeed.getStyle()
                 .set("border", "1px solid black")
                 .set("background", "white")
-                .set("margin", "5px 0px 0px 0px")
                 .set("color", "black");
-
-        labelHumidity.getStyle()
+        humidity.getStyle()
                 .set("border", "1px solid black")
                 .set("background", "white")
-                .set("margin", "5px 0px 0px 0px")
                 .set("color", "black");
-
-        labelPressure.getStyle()
+        pressure.getStyle()
                 .set("border", "1px solid black")
                 .set("background", "white")
-                .set("margin", "5px 0px 0px 0px")
                 .set("color", "black");
-
-        textFieldUsernameSignUp.getStyle()
-                .set("border", "1px solid black");
-        textFieldUsernameSignUp.setHelperText("ENTER USERNAME");
-        textFieldUsernameSignUp.setWidth("300px");
-
-        textFieldEmailSignUp.getStyle()
-                .set("border", "1px solid black");
-        textFieldEmailSignUp.setHelperText("ENTER E-MAIL");
-        textFieldEmailSignUp.setWidth("300px");
-
-        passwordFieldSignUp.getStyle()
-                .set("border", "1px solid black");
-        passwordFieldSignUp.setPlaceholder("ENTER PASSWORD");
-        passwordFieldSignUp.setWidth("300px");
-
-        textFieldEmailLogIn.getStyle()
-                .set("border", "1px solid black");
-        textFieldEmailLogIn.setHelperText("ENTER E-MAIL");
-        textFieldEmailLogIn.setWidth("300px");
-
-        passwordFieldLogIn.getStyle()
-                .set("border", "1px solid black");
-        passwordFieldLogIn.setPlaceholder("ENTER PASSWORD");
-        passwordFieldSignUp.setWidth("300px");
-
-        buttonCommitSignUp.getStyle()
-                .set("border", "1px solid black")
-                .set("background", "grey")
-                .set("color", "black");
-
-        buttonCommitLogIn.getStyle()
-                .set("border", "1px solid black")
-                .set("background", "grey")
-                .set("color", "black");
-
-        textFieldGiveEmailForSubscribe.getStyle()
-//                .set("border", "1px solid black")
-                .set("margin", "0px 0px 0px 20px")
-                .set("color", "black");
-        textFieldGiveEmailForSubscribe.setWidth("300px");
-        textFieldGiveEmailForSubscribe.setHelperText("GIVE YOUR E-MAIL");
-
-        buttonSubscribeCommit.getStyle()
-                .set("border", "1px solid black")
-                .set("background", "grey")
-                .set("color", "black");
-
-        buttonDeleteSubscribe.getStyle()
-                .set("border", "1px solid black")
-                .set("background", "grey")
-                .set("color", "black");
-
-        dialogInfo.setWidth("650px");
+        infoDialog.setWidth("480px");
+        detailsVerticalLayout.setVisible(false);
+        selectHorizontalLayout.getStyle()
+                .set("margin", "10px 0px 0px 580px");
+        setHorizontalComponentAlignment(Alignment.CENTER, header);
+        setHorizontalComponentAlignment(Alignment.CENTER, pollutionTitle);
+        setHorizontalComponentAlignment(Alignment.CENTER, pollutionGrid);
+        setHorizontalComponentAlignment(Alignment.CENTER, weatherTitle);
+        setHorizontalComponentAlignment(Alignment.CENTER, temperature);
+        setHorizontalComponentAlignment(Alignment.CENTER, windSpeed);
+        setHorizontalComponentAlignment(Alignment.CENTER, humidity);
+        setHorizontalComponentAlignment(Alignment.CENTER, pressure);
     }
 
-    private void loadSelectData() {
-        List<AirQualityStationDto> stationDtoList = alertService.getAllAirQualityStations();
-        selectCity.setItemLabelGenerator(AirQualityStationDto::getCity);
-        selectCity.setItems(stationDtoList);
-    }
-
-    private void setGridColumns() {
-        gridAirQualitySensor.setColumns("name", "code", "value");
-        gridAirQualitySensor.getColumnByKey("name").setHeader("POLLUTION NAME");
-        gridAirQualitySensor.getColumnByKey("code").setHeader("PATTERN");
-        gridAirQualitySensor.getColumnByKey("value").setHeader("VALUE [µg/m³]");
-    }
-
-//    private boolean signUp() {
-//        String email = emailSignUpTextField.getValue();
-//        if (alertService.getUserByEmail(email) == null) return false;
-//        UserDto userDto = UserDto.builder()
-//                .username(usernameSignUpTextField.getValue())
-//                .email(emailSignUpTextField.getValue())
-//                .password(passwordSignUpTextField.getValue())
-//                .build();
-//        alertService.createUser(userDto);
-//        return true;
-//    }
-
-//    private boolean logIn() {
-//        String username = usernameLogInTextField.getValue();
-//        String password = passwordLogInTextField.getValue();
-//        List<UserDto> userDtoList = alertService.getAllUsers();
-//        if (userDtoList.isEmpty()) {
-//            System.out.println("LIST IS EMPTY :(");
-//            responseStatus.setText("THERE ARE NO USRES");
-//            return false;
-//        }
-//        List<String> usernameList = new ArrayList<>();
-//        for (UserDto userDto : userDtoList) {
-//            usernameList.add(userDto.getUsername());
-//        }
-//        if (!usernameList.contains(username)) {
-//            System.out.println("WRONG USER");
-//            responseStatus.setText("WRONG USER");
-//            return false;
-//        }
-//        alertService.logInUser(username, password);
-//        if (!alertService.getUserByUsername(username).getPassword().equals(password)) {
-//            System.out.println("WRONG PASSWORD");
-//            responseStatus.setText("WRONG PASSWORD");
-//            return false;
-//        }
-//        return true;
-//    }
-
-    private void showDialog(String text) {
+    public void showDialog(String text) {
         dialog.removeAll();
         dialog.add(new Text(text));
         dialog.open();
-    }
-
-    private void refresh() {
-        alertService.setAllWeatherStations();
-        alertService.setAllAirQualityStations();
     }
 }

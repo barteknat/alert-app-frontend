@@ -2,13 +2,13 @@ package com.alert.app.frontend.service;
 
 import com.alert.app.frontend.client.AlertClient;
 import com.alert.app.frontend.dto.*;
+import com.vaadin.flow.spring.annotation.SpringComponent;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Component
+@SpringComponent
 @RequiredArgsConstructor
 public class AlertService {
 
@@ -60,6 +60,10 @@ public class AlertService {
 
     public void logInUser(String email, String password) {
         alertClient.logInUser(email, password);
+    }
+
+    public void logOutUser(String email) {
+        alertClient.logOutUser(email);
     }
 
     public void deleteUser(long userId) {

@@ -119,6 +119,14 @@ public class AlertClient {
         }
     }
 
+    public void logOutUser(String email) {
+        try {
+            restTemplate.put(createUriForLogOutUser(email), null);
+        } catch (RestClientException e) {
+            log.error(e.getMessage(), e);
+        }
+    }
+
     public void deleteUser(long userId) {
         try {
             restTemplate.delete(createUriForDeleteUser(userId));
@@ -240,6 +248,14 @@ public class AlertClient {
         return UriComponentsBuilder.fromHttpUrl(alertConfig.getAlertBackendApiEndpoint() + "/user/logIn")
                 .queryParam("email", email)
                 .queryParam("password", password)
+                .build()
+                .encode()
+                .toUri();
+    }
+
+    private URI createUriForLogOutUser(String email) {
+        return UriComponentsBuilder.fromHttpUrl(alertConfig.getAlertBackendApiEndpoint() + "/user/logOut")
+                .queryParam("email", email)
                 .build()
                 .encode()
                 .toUri();
