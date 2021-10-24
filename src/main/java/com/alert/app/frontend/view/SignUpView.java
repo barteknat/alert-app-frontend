@@ -30,14 +30,17 @@ public class SignUpView extends VerticalLayout {
         this.alertService = alertService;
         this.addClassNames("body");
         styleComponents();
+
         commitSignUp.addClickListener(event -> {
             if (signUp()) {
                 commitSignUp.getUI().ifPresent(ui -> ui.navigate(""));
             }
         });
+
         goToMainView.addClickListener(event -> {
             goToMainView.getUI().ifPresent(ui -> ui.navigate(""));
         });
+
         VerticalLayout verticalLayout = new VerticalLayout(username, email, password, commitSignUp, goToMainView);
         add(header, verticalLayout);
     }
@@ -67,7 +70,7 @@ public class SignUpView extends VerticalLayout {
 
     private void styleComponents() {
         header.getStyle()
-                .set("border", "3px solid black")
+                .set("border", "2px solid black")
                 .set("color", "black");
         username.getStyle()
                 .set("border", "1px solid black");
@@ -85,10 +88,14 @@ public class SignUpView extends VerticalLayout {
                 .set("border", "1px solid black")
                 .set("background", "grey")
                 .set("color", "black");
+        commitSignUp.setWidth("150px");
+        commitSignUp.setHeight("45px");
         goToMainView.getStyle()
                 .set("border", "1px solid black")
                 .set("background", "grey")
                 .set("color", "black");
+        goToMainView.setWidth("150px");
+        goToMainView.setHeight("45px");
         setHorizontalComponentAlignment(Alignment.CENTER, header);
         setHorizontalComponentAlignment(Alignment.CENTER, username);
         setHorizontalComponentAlignment(Alignment.CENTER, email);

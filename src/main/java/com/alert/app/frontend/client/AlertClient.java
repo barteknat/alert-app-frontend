@@ -20,7 +20,6 @@ public class AlertClient {
     private final RestTemplate restTemplate;
     private final AlertConfig alertConfig;
 
-
     public void setAllWeatherStations() {
         try {
             restTemplate.getForObject(createUriForSetAllWeatherStations(), Void.class);
@@ -135,9 +134,9 @@ public class AlertClient {
         }
     }
 
-    public List<SubscribeDto> getAllSubscribes() {
+    public List<SubscribeDto> getAllSubscribesByUserId(long userId) {
         try {
-            return Arrays.asList(Optional.ofNullable(restTemplate.getForObject(createUriForGetAllSubscribes(), SubscribeDto[].class))
+            return Arrays.asList(Optional.ofNullable(restTemplate.getForObject(createUriForGetAllSubscribesByUserId(userId), SubscribeDto[].class))
                     .orElse(new SubscribeDto[0]));
         } catch (RestClientException e) {
             log.error(e.getMessage(), e);
@@ -268,8 +267,9 @@ public class AlertClient {
                 .toUri();
     }
 
-    private URI createUriForGetAllSubscribes() {
-        return UriComponentsBuilder.fromHttpUrl(alertConfig.getAlertBackendApiEndpoint() + "/subscribe/all")
+    private URI createUriForGetAllSubscribesByUserId(long userId) {
+        return UriComponentsBuilder.fromHttpUrl(alertConfig.getAlertBackendApiEndpoint() + "/subscribe/allById")
+                .queryParam("userId", userId)
                 .build()
                 .encode()
                 .toUri();

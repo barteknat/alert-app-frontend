@@ -42,17 +42,17 @@ public class AlertService {
         alertClient.createUser(userDto);
     }
 
-    public List<UserDto> getAllUsers() {
-        return alertClient.getAllUsers();
-    }
+//    public List<UserDto> getAllUsers() {
+//        return alertClient.getAllUsers();
+//    }
 
     public UserDto getUserByEmail(String email) {
         return alertClient.getUserByEmail(email);
     }
 
-    public UserDto getUserByUsername(String username) {
-        return alertClient.getUserByUsername(username);
-    }
+//    public UserDto getUserByUsername(String username) {
+//        return alertClient.getUserByUsername(username);
+//    }
 
     public void updateUser(UserDto userDto) {
         alertClient.updateUser(userDto);
@@ -70,8 +70,8 @@ public class AlertService {
         alertClient.deleteUser(userId);
     }
 
-    public List<SubscribeDto> getAllSubscribes() {
-        return alertClient.getAllSubscribes();
+    public List<SubscribeDto> getAllSubscribesByUserId(long userId) {
+        return alertClient.getAllSubscribesByUserId(userId);
     }
 
     public SubscribeDto getSubscribeByUserIdAndCity(long userId, String city) {

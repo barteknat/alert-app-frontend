@@ -20,10 +20,12 @@ import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.lumo.Lumo;
+import lombok.Getter;
 import lombok.Setter;
 
 import java.util.List;
 
+@Getter
 @Setter
 @SpringComponent
 @PreserveOnRefresh
@@ -48,6 +50,7 @@ public class MainView extends VerticalLayout {
     private final Label pressure = new Label();
     private final Button details = new Button("DETAILS");
     private final Button subscribe = new Button("SUBSCRIBE");
+    private final Button hideDetails = new Button("HIDE DETAILS");
     private final Button signUp = new Button("SIGN UP");
     private final Button logIn = new Button("LOG IN");
     private final Button logOut = new Button("LOG OUT");
@@ -55,9 +58,8 @@ public class MainView extends VerticalLayout {
     private final Button account = new Button("ACCOUNT");
     private final Dialog dialog = new Dialog();
     private final Dialog infoDialog = new Dialog();
-    private final HorizontalLayout selectHorizontalLayout = new HorizontalLayout(citySelect, details, subscribe);
+    private final HorizontalLayout selectHorizontalLayout = new HorizontalLayout(citySelect, details, subscribe, hideDetails);
     private final VerticalLayout detailsVerticalLayout = new VerticalLayout(pollutionTitle, pollutionGrid, weatherTitle, temperature, windSpeed, humidity, pressure);
-    private final VerticalLayout mainLayout = new VerticalLayout(menu, header, selectHorizontalLayout, detailsVerticalLayout);
 
     public MainView(AlertService alertService) {
         this.alertService = alertService;
@@ -70,15 +72,24 @@ public class MainView extends VerticalLayout {
         menu.addItem(info);
         menuLoggedIn.addItem(logOut);
         menuLoggedIn.addItem(account);
+        hideDetails.setVisible(false);
+
         info.addClickListener(event -> {
             showInfo();
         });
+
         signUp.addClickListener(event -> {
             signUp.getUI().ifPresent(ui -> ui.navigate("signup"));
         });
+
         logIn.addClickListener(event -> {
             logIn.getUI().ifPresent(ui -> ui.navigate("login"));
         });
+
+        account.addClickListener(event -> {
+            account.getUI().ifPresent(ui -> ui.navigate("account"));
+        });
+
         logOut.addClickListener(event -> {
             if (logOut()) {
                 removeAll();
@@ -86,14 +97,17 @@ public class MainView extends VerticalLayout {
                 subscribe.setVisible(false);
             }
         });
+
         details.addClickListener(event -> {
             if (citySelect.getValue() == null) {
                 showDialog("YOU HAVE TO CHOOSE CITY FIRST");
                 return;
             }
             setAirPollutionAndWeatherDetails();
+            hideDetails.setVisible(true);
             detailsVerticalLayout.setVisible(true);
         });
+
         subscribe.addClickListener(event -> {
             if (citySelect.getValue() == null) {
                 showDialog("YOU HAVE TO CHOOSE CITY FIRST");
@@ -101,6 +115,13 @@ public class MainView extends VerticalLayout {
             }
             subscribe();
         });
+
+        hideDetails.addClickListener(event -> {
+            detailsVerticalLayout.setVisible(false);
+            hideDetails.setVisible(false);
+        });
+
+        VerticalLayout mainLayout = new VerticalLayout(menu, header, selectHorizontalLayout, detailsVerticalLayout);
         add(mainLayout);
     }
 
@@ -108,6 +129,12 @@ public class MainView extends VerticalLayout {
         removeAll();
         add(new VerticalLayout(menuLoggedIn, header, selectHorizontalLayout, detailsVerticalLayout));
         subscribe.setVisible(true);
+    }
+
+    public void setLoggedOutLayer() {
+        removeAll();
+        add(new VerticalLayout(menu, header, selectHorizontalLayout, detailsVerticalLayout));
+        subscribe.setVisible(false);
     }
 
     private void showInfo() {
@@ -120,6 +147,26 @@ public class MainView extends VerticalLayout {
         infoDialog.open();
     }
 
+    private boolean logOut() {
+        if (userDto == null) return false;
+        alertService.logOutUser(userDto.getEmail());
+        userDto = null;
+        showDialog("YOU ARE LOGGED OUT");
+        return true;
+    }
+
+    private void setAirPollutionAndWeatherDetails() {
+        WeatherStationDto weatherStationDto = alertService.getWeatherStationByCity(citySelect.getValue().getCity());
+        List<AirQualitySensorDto> airQualitySensorDtos = alertService.getAllAirQualitySensorsByStationId(alertService.findByCity(citySelect.getValue().getCity()).getStationApiId());
+        weatherTitle.setText("WEATHER IN " + weatherStationDto.getCity() + " ON " + weatherStationDto.getDate() + "T" + weatherStationDto.getTime() + ":00");
+        temperature.setText("TEMPERATURE: " + weatherStationDto.getTemperature() + " °C");
+        windSpeed.setText("WIND SPEED: " + weatherStationDto.getWindSpeed() + " km/h");
+        humidity.setText("HUMIDITY: " + weatherStationDto.getHumidity() + " %");
+        pressure.setText("PRESSURE: " + weatherStationDto.getPressure() + " hPa");
+        pollutionTitle.setText("AIR POLLUTION IN " + weatherStationDto.getCity() + " ON " + airQualitySensorDtos.get(0).getDate());
+        pollutionGrid.setItems(airQualitySensorDtos);
+    }
+
     private void subscribe() {
         if (userDto == null) return;
         SubscribeDto subscribeDto = alertService.getSubscribeByUserIdAndCity(userDto.getId(), citySelect.getValue().getCity());
@@ -128,15 +175,8 @@ public class MainView extends VerticalLayout {
             return;
         }
         alertService.createSubscribe(userDto.getId(), citySelect.getValue().getCity());
-        showDialog("YOU ARE SUBSCRIBING >>" + citySelect.getValue().getCity() + "<< YOU WILL RECEIVE ALERT WHEN AIR CONDITION WILL BE BAD");
-    }
-
-    private boolean logOut() {
-        if (userDto == null) return false;
-        alertService.logOutUser(userDto.getEmail());
-        userDto = null;
-        showDialog("YOU ARE LOGGED OUT");
-        return true;
+        showDialog("YOU ARE SUBSCRIBING >>" + citySelect.getValue().getCity() + "<< " +
+                "YOU WILL RECEIVE ALERT WHEN AIR CONDITION WILL BE BAD");
     }
 
     private void loadCities() {
@@ -154,22 +194,9 @@ public class MainView extends VerticalLayout {
         pollutionGrid.getColumnByKey("value").setHeader("VALUE [µg/m³]");
     }
 
-    private void setAirPollutionAndWeatherDetails() {
-        WeatherStationDto weatherStationDto = alertService.getWeatherStationByCity(citySelect.getValue().getCity());
-        List<AirQualitySensorDto> airQualitySensorDtos = alertService.getAllAirQualitySensorsByStationId(alertService.findByCity(citySelect.getValue().getCity()).getStationApiId());
-        weatherTitle.setText("WEATHER IN " + weatherStationDto.getCity() + " ON " + weatherStationDto.getDate() + "T" + weatherStationDto.getTime() + ":00");
-        temperature.setText("TEMPERATURE: " + weatherStationDto.getTemperature() + " °C");
-        windSpeed.setText("WIND SPEED: " + weatherStationDto.getWindSpeed() + " km/h");
-        humidity.setText("HUMIDITY: " + weatherStationDto.getHumidity() + " %");
-        pressure.setText("PRESSURE: " + weatherStationDto.getPressure() + " hPa");
-        System.out.println(weatherStationDto.toString());
-        pollutionTitle.setText("AIR POLLUTION IN " + weatherStationDto.getCity() + " ON " + airQualitySensorDtos.get(0).getDate());
-        pollutionGrid.setItems(airQualitySensorDtos);
-    }
-
     private void styleComponents() {
         header.getStyle()
-                .set("border", "3px solid black")
+                .set("border", "2px solid black")
                 .set("color", "black")
                 .set("margin", "-22px 0px 0px 0px");
         signUp.getStyle()
@@ -199,7 +226,14 @@ public class MainView extends VerticalLayout {
                 .set("background", "darkgrey");
         details.setWidth("128px");
         details.setHeight("45px");
-        details.setIcon(new Icon(VaadinIcon.ARROW_CIRCLE_RIGHT_O));
+        details.setIcon(new Icon(VaadinIcon.ARROW_CIRCLE_DOWN_O));
+        hideDetails.getStyle()
+                .set("border", "1px solid black")
+                .set("color", "black")
+                .set("background", "darkgrey");
+        hideDetails.setWidth("170px");
+        hideDetails.setHeight("45px");
+        hideDetails.setIcon(new Icon(VaadinIcon.ARROW_CIRCLE_UP_O));
         pollutionTitle.getStyle()
                 .set("border", "3px solid black")
                 .set("background", "white")
@@ -232,7 +266,7 @@ public class MainView extends VerticalLayout {
         infoDialog.setWidth("480px");
         detailsVerticalLayout.setVisible(false);
         selectHorizontalLayout.getStyle()
-                .set("margin", "10px 0px 0px 580px");
+                .set("margin", "30px 0px 0px 580px");
         setHorizontalComponentAlignment(Alignment.CENTER, header);
         setHorizontalComponentAlignment(Alignment.CENTER, pollutionTitle);
         setHorizontalComponentAlignment(Alignment.CENTER, pollutionGrid);

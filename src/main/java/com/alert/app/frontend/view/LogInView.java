@@ -25,21 +25,24 @@ public class LogInView extends VerticalLayout {
     private final PasswordField password = new PasswordField();
     private final Button commitLogIn = new Button("LOG IN");
     private final Button goToMainView = new Button("MAIN VIEW");
-    private final VerticalLayout verticalLayout = new VerticalLayout(email, password, commitLogIn, goToMainView);
 
     public LogInView(MainView mainView, AlertService alertService) {
         this.mainView = mainView;
         this.alertService = alertService;
         this.addClassName("body");
         styleComponents();
+
         commitLogIn.addClickListener(event -> {
             if (logIn()) {
                 commitLogIn.getUI().ifPresent(ui -> ui.navigate(""));
             }
         });
+
         goToMainView.addClickListener(event -> {
             goToMainView.getUI().ifPresent(ui -> ui.navigate(""));
         });
+
+        VerticalLayout verticalLayout = new VerticalLayout(email, password, commitLogIn, goToMainView);
         add(header, verticalLayout);
     }
 
@@ -70,7 +73,7 @@ public class LogInView extends VerticalLayout {
 
     private void styleComponents() {
         header.getStyle()
-                .set("border", "3px solid black")
+                .set("border", "2px solid black")
                 .set("color", "black");
         email.getStyle()
                 .set("border", "1px solid black");
@@ -84,10 +87,14 @@ public class LogInView extends VerticalLayout {
                 .set("border", "1px solid black")
                 .set("background", "grey")
                 .set("color", "black");
+        commitLogIn.setWidth("150px");
+        commitLogIn.setHeight("45px");
         goToMainView.getStyle()
                 .set("border", "1px solid black")
                 .set("background", "grey")
                 .set("color", "black");
+        goToMainView.setWidth("150px");
+        goToMainView.setHeight("45px");
         setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, header);
         setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, email);
         setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, password);
