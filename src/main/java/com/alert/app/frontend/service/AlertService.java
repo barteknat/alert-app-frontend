@@ -26,33 +26,41 @@ public class AlertService {
         return alertClient.getAllAirQualityStations();
     }
 
+    public List<AirQualitySensorDto> getAllAirQualitySensors() {
+        return alertClient.getAllAirQualitySensors();
+    }
+
     public List<AirQualitySensorDto> getAllAirQualitySensorsByStationId(long stationId) {
         return alertClient.getAllAirQualitySensorsByStationId(stationId);
+    }
+
+    public List<AirQualityIndexDto> getAllAirQualityIndexes() {
+        return alertClient.getAllAirQualityIndexes();
+    }
+
+    public List<WeatherStationDto> getAllWeatherStations() {
+        return alertClient.getAllWeatherStations();
     }
 
     public WeatherStationDto getWeatherStationByCity(String city) {
         return alertClient.getWeatherStationByCity(city);
     }
 
-    public AirQualityStationDto findByCity(String city) {
-        return getAllAirQualityStations().stream().filter(station -> station.getCity().contains(city)).collect(Collectors.toList()).get(0);
+    public List<StatisticsDto> getAllStatistics() {
+        return alertClient.getAllStatistics();
     }
 
-    public void createUser(UserDto userDto) {
-        alertClient.createUser(userDto);
+    public List<UserDto> getAllUsers() {
+        return alertClient.getAllUsers();
     }
-
-//    public List<UserDto> getAllUsers() {
-//        return alertClient.getAllUsers();
-//    }
 
     public UserDto getUserByEmail(String email) {
         return alertClient.getUserByEmail(email);
     }
 
-//    public UserDto getUserByUsername(String username) {
-//        return alertClient.getUserByUsername(username);
-//    }
+    public void createUser(UserDto userDto) {
+        alertClient.createUser(userDto);
+    }
 
     public void updateUser(UserDto userDto) {
         alertClient.updateUser(userDto);
@@ -70,6 +78,10 @@ public class AlertService {
         alertClient.deleteUser(userId);
     }
 
+    public List<SubscribeDto> getAllSubscribes() {
+        return alertClient.getAllSubscribes();
+    }
+
     public List<SubscribeDto> getAllSubscribesByUserId(long userId) {
         return alertClient.getAllSubscribesByUserId(userId);
     }
@@ -84,5 +96,9 @@ public class AlertService {
 
     public void deleteSubscribe(long subscribeId) {
         alertClient.deleteSubscribe(subscribeId);
+    }
+
+    public AirQualityStationDto findByCity(String city) {
+        return getAllAirQualityStations().stream().filter(station -> station.getCity().contains(city)).collect(Collectors.toList()).get(0);
     }
 }

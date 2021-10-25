@@ -51,6 +51,11 @@ public class LogInView extends VerticalLayout {
             mainView.showDialog("FIELD CANNOT BE EMPTY");
             return false;
         }
+        if (email.getValue().equals("ADMIN") && password.getValue().equals("ADMINPASSWORD")) {
+            commitLogIn.getUI().ifPresent(ui -> ui.navigate("admin"));
+            mainView.showDialog("YOU ARE AT STATISTICS PANEL");
+            return false;
+        }
         UserDto userDto = alertService.getUserByEmail(email.getValue());
         if (userDto == null) {
             mainView.showDialog("INCORRECT USER");

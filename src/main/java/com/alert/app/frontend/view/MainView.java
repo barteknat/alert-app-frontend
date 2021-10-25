@@ -23,6 +23,7 @@ import com.vaadin.flow.theme.lumo.Lumo;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -137,6 +138,12 @@ public class MainView extends VerticalLayout {
         subscribe.setVisible(false);
     }
 
+    public void showDialog(String text) {
+        dialog.removeAll();
+        dialog.add(new Text(text));
+        dialog.open();
+    }
+
     private void showInfo() {
         infoDialog.removeAll();
         infoDialog.add(new Text("ALERT APP ALLOWS YOU TO CHECKING ACTUAL AIR " +
@@ -180,8 +187,8 @@ public class MainView extends VerticalLayout {
     }
 
     private void loadCities() {
-        alertService.setAllWeatherStations();
-        alertService.setAllAirQualityStations();
+//        alertService.setAllWeatherStations();
+//        alertService.setAllAirQualityStations();
         List<AirQualityStationDto> stationDtoList = alertService.getAllAirQualityStations();
         citySelect.setItemLabelGenerator(AirQualityStationDto::getCity);
         citySelect.setItems(stationDtoList);
@@ -275,11 +282,5 @@ public class MainView extends VerticalLayout {
         setHorizontalComponentAlignment(Alignment.CENTER, windSpeed);
         setHorizontalComponentAlignment(Alignment.CENTER, humidity);
         setHorizontalComponentAlignment(Alignment.CENTER, pressure);
-    }
-
-    public void showDialog(String text) {
-        dialog.removeAll();
-        dialog.add(new Text(text));
-        dialog.open();
     }
 }

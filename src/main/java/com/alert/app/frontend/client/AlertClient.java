@@ -46,10 +46,40 @@ public class AlertClient {
         }
     }
 
+    public List<AirQualitySensorDto> getAllAirQualitySensors() {
+        try {
+            return Arrays.asList(Optional.ofNullable(restTemplate.getForObject(createUriForGetAllAirQualitySensors(), AirQualitySensorDto[].class))
+                    .orElse(new AirQualitySensorDto[0]));
+        } catch (RestClientException e) {
+            log.error(e.getMessage(), e);
+            return new ArrayList<>();
+        }
+    }
+
     public List<AirQualitySensorDto> getAllAirQualitySensorsByStationId(long stationId) {
         try {
-            return Arrays.asList(Optional.ofNullable(restTemplate.getForObject(createUriForGetAllAirQualitySensors(stationId), AirQualitySensorDto[].class))
+            return Arrays.asList(Optional.ofNullable(restTemplate.getForObject(createUriForGetAllAirQualitySensorsByStationId(stationId), AirQualitySensorDto[].class))
                     .orElse(new AirQualitySensorDto[0]));
+        } catch (RestClientException e) {
+            log.error(e.getMessage(), e);
+            return new ArrayList<>();
+        }
+    }
+
+    public List<AirQualityIndexDto> getAllAirQualityIndexes() {
+        try {
+            return Arrays.asList(Optional.ofNullable(restTemplate.getForObject(createUriForGetAllAirQualityIndexes(), AirQualityIndexDto[].class))
+                    .orElse(new AirQualityIndexDto[0]));
+        } catch (RestClientException e) {
+            log.error(e.getMessage(), e);
+            return new ArrayList<>();
+        }
+    }
+
+    public List<WeatherStationDto> getAllWeatherStations() {
+        try {
+            return Arrays.asList(Optional.ofNullable(restTemplate.getForObject(createUriForGetAllWeatherStations(), WeatherStationDto[].class))
+                    .orElse(new WeatherStationDto[0]));
         } catch (RestClientException e) {
             log.error(e.getMessage(), e);
             return new ArrayList<>();
@@ -58,19 +88,20 @@ public class AlertClient {
 
     public WeatherStationDto getWeatherStationByCity(String city) {
         try {
-            return restTemplate.getForObject(createUriForGetWeatherStation(city), WeatherStationDto.class);
+            return restTemplate.getForObject(createUriForGetWeatherStationByCity(city), WeatherStationDto.class);
         } catch (RestClientException e) {
             log.error(e.getMessage(), e);
             return new WeatherStationDto();
         }
     }
 
-    public void createUser(UserDto userDto) {
+    public List<StatisticsDto> getAllStatistics() {
         try {
-            restTemplate.postForObject(createUriForCreateUser(), userDto, UserDto.class);
+            return Arrays.asList(Optional.ofNullable(restTemplate.getForObject(createUriForGetAllStatistics(), StatisticsDto[].class))
+                    .orElse(new StatisticsDto[0]));
         } catch (RestClientException e) {
             log.error(e.getMessage(), e);
-            new UserDto();
+            return new ArrayList<>();
         }
     }
 
@@ -93,12 +124,12 @@ public class AlertClient {
         }
     }
 
-    public UserDto getUserByUsername(String username) {
+    public void createUser(UserDto userDto) {
         try {
-            return restTemplate.getForObject(createUriForGetUserByUsername(username), UserDto.class);
+            restTemplate.postForObject(createUriForCreateUser(), userDto, UserDto.class);
         } catch (RestClientException e) {
             log.error(e.getMessage(), e);
-            return new UserDto();
+            new UserDto();
         }
     }
 
@@ -131,6 +162,16 @@ public class AlertClient {
             restTemplate.delete(createUriForDeleteUser(userId));
         } catch (RestClientException e) {
             log.error(e.getMessage(), e);
+        }
+    }
+
+    public List<SubscribeDto> getAllSubscribes() {
+        try {
+            return Arrays.asList(Optional.ofNullable(restTemplate.getForObject(createUriForGetAllSubscribes(), SubscribeDto[].class))
+                    .orElse(new SubscribeDto[0]));
+        } catch (RestClientException e) {
+            log.error(e.getMessage(), e);
+            return new ArrayList<>();
         }
     }
 
@@ -190,7 +231,14 @@ public class AlertClient {
                 .toUri();
     }
 
-    private URI createUriForGetAllAirQualitySensors(long stationId) {
+    private URI createUriForGetAllAirQualitySensors() {
+        return UriComponentsBuilder.fromHttpUrl(alertConfig.getAlertBackendApiEndpoint() + "/sensor/all")
+                .build()
+                .encode()
+                .toUri();
+    }
+
+    private URI createUriForGetAllAirQualitySensorsByStationId(long stationId) {
         return UriComponentsBuilder.fromHttpUrl(alertConfig.getAlertBackendApiEndpoint() + "/sensor")
                 .queryParam("stationId", stationId)
                 .build()
@@ -198,9 +246,30 @@ public class AlertClient {
                 .toUri();
     }
 
-    private URI createUriForGetWeatherStation(String city) {
+    private URI createUriForGetAllAirQualityIndexes() {
+        return UriComponentsBuilder.fromHttpUrl(alertConfig.getAlertBackendApiEndpoint() + "/airQuality/all")
+                .build()
+                .encode()
+                .toUri();
+    }
+
+    private URI createUriForGetAllWeatherStations() {
+        return UriComponentsBuilder.fromHttpUrl(alertConfig.getAlertBackendApiEndpoint() + "/weatherStation/all")
+                .build()
+                .encode()
+                .toUri();
+    }
+
+    private URI createUriForGetWeatherStationByCity(String city) {
         return UriComponentsBuilder.fromHttpUrl(alertConfig.getAlertBackendApiEndpoint() + "/weatherStation")
                 .queryParam("city", city)
+                .build()
+                .encode()
+                .toUri();
+    }
+
+    private URI createUriForGetAllStatistics() {
+        return UriComponentsBuilder.fromHttpUrl(alertConfig.getAlertBackendApiEndpoint() + "/statistics")
                 .build()
                 .encode()
                 .toUri();
@@ -216,14 +285,6 @@ public class AlertClient {
     private URI createUriForGetUserByEmail(String email) {
         return UriComponentsBuilder.fromHttpUrl(alertConfig.getAlertBackendApiEndpoint() + "/user")
                 .queryParam("email", email)
-                .build()
-                .encode()
-                .toUri();
-    }
-
-    private URI createUriForGetUserByUsername(String username) {
-        return UriComponentsBuilder.fromHttpUrl(alertConfig.getAlertBackendApiEndpoint() + "/user/name")
-                .queryParam("username", username)
                 .build()
                 .encode()
                 .toUri();
@@ -262,6 +323,13 @@ public class AlertClient {
 
     private URI createUriForDeleteUser(long userId) {
         return UriComponentsBuilder.fromHttpUrl(alertConfig.getAlertBackendApiEndpoint() + "/user/" + userId)
+                .build()
+                .encode()
+                .toUri();
+    }
+
+    private URI createUriForGetAllSubscribes() {
+        return UriComponentsBuilder.fromHttpUrl(alertConfig.getAlertBackendApiEndpoint() + "/subscribe/all")
                 .build()
                 .encode()
                 .toUri();
