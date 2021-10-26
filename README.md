@@ -27,7 +27,20 @@ For frontend (runs second):
 
 #### THE QUICK GUIDE ABOUT THE FRONT
 
+This is the main page of ALERT APP. You can check info about the app at the top bar, or try to get details about air condition and weather from selected city. You can also create a new account, or log in to the app if you are registered. 
 ![plot](./images/1.png)
+
+![plot](./images/2.png)
+
+![plot](./images/3.png)
+
+![plot](./images/4.png)
+
+![plot](./images/5.png)
+
+![plot](./images/6.png)
+
+![plot](./images/7.png)
 
 Used API:
 
