@@ -24,3 +24,19 @@ For frontend (runs second):
 - open and build the project
 - start the application by running main method in AlertFrontApplication class (app is using local server 8080)
 - open your browser on localhost:8081
+
+#### THE QUICK GUIDE ABOUT THE FRONT
+
+![plot](./images/1.png)
+
+Used API:
+
+https://powietrze.gios.gov.pl/pjp/content/api
+
+https://danepubliczne.imgw.pl/apiinfo
+
+The data from APIs is changed or incomplete.
+
+Used photo:
+
+https://pixabay.com/pl/photos/mati-miasto-architektura-budynek-3131158/
