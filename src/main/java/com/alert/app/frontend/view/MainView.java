@@ -248,7 +248,7 @@ public class MainView extends VerticalLayout {
         pollutionGrid.getStyle()
                 .set("border", "1px solid black")
                 .set("color", "black");
-        pollutionGrid.setWidth("450px");
+        pollutionGrid.setWidth("700px");
         pollutionGrid.setHeight("180px");
         weatherTitle.getStyle()
                 .set("border", "3px solid black")
