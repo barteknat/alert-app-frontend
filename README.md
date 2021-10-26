@@ -24,5 +24,3 @@ For frontend (runs second):
 - open and build the project
 - start the application by running main method in AlertFrontApplication class (app is using local server 8080)
 - open your browser on localhost:8081
-
-![img_1.png](img_1.png)
