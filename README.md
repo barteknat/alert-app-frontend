@@ -3,7 +3,9 @@
 Link to backend: https://github.com/barteknat/alert-app-backend
 
 ALERT APP allows you to:
+
 -> check actual air pollution and weather in selected Poland cities - for every user,
+
 -> subscribe on getting alert e-mails about bad air condition in chosen city when it occurs - only for registered users after logging in.
 
 #### RUN INSTRUCTION
