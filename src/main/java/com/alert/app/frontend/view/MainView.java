@@ -187,8 +187,8 @@ public class MainView extends VerticalLayout {
     }
 
     private void loadCities() {
-//        alertService.setAllWeatherStations();
-//        alertService.setAllAirQualityStations();
+        alertService.setAllWeatherStations();
+        alertService.setAllAirQualityStations();
         List<AirQualityStationDto> stationDtoList = alertService.getAllAirQualityStations();
         citySelect.setItemLabelGenerator(AirQualityStationDto::getCity);
         citySelect.setItems(stationDtoList);
